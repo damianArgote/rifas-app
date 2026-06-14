@@ -72,6 +72,8 @@ openssl rand -base64 32
 | `MP_CBU`          | CBU/CVU para transferencia                    |
 | `MP_TITULAR`      | Nombre del titular de la cuenta               |
 | `ADMIN_WHATSAPP`  | WhatsApp del admin (con código país)          |
+| `MP_ACCESS_TOKEN` | Access Token de MP (APP_USR=prod, TEST=test) |
+| `SITE_URL`        | URL pública (producción o ngrok para testing) |
 
 ### 6. Sembrar admin (primera vez)
 
@@ -140,3 +142,22 @@ npm run lint      # ESLint
 npx drizzle-kit push   # Sincronizar schema a DB
 npx drizzle-kit studio # Drizzle Studio (UI para ver datos)
 ```
+
+## Probar Mercado Pago local
+
+1. Seteá `MP_ACCESS_TOKEN` en `.env`
+2. Levantá un túnel con **ngrok**: `ngrok http 3000`
+3. Copiá la URL de ngrok (ej: `https://xxxx.ngrok.io`) en `SITE_URL` del `.env`
+4. Reiniciá el dev server
+
+El webhook de MP se registra automáticamente cuando creás una preferencia de pago (`/api/webhooks/mp`). No necesitás configurarlo manualmente en el dashboard de MP.
+
+### Estados de pago
+
+Al volver de Mercado Pago, la URL muestra un banner con el resultado del pago:
+
+| Query param    | Resultado                |
+| -------------- | ------------------------ |
+| `?mp=success`  | ✅ Pago confirmado       |
+| `?mp=failure`  | ❌ Pago rechazado        |
+| `?mp=pending`  | ⏳ Pago pendiente        |

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { NumberGrid } from "@/components/rifa/NumberGrid";
 import { CountdownTimer } from "@/components/rifa/CountdownTimer";
 import { ReservationForm } from "@/components/rifa/ReservationForm";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatARS } from "@/lib/utils";
-import { Trophy, Ticket, Calendar, Info } from "lucide-react";
+import { Trophy, Ticket, Calendar, Info, CheckCircle, XCircle, Clock } from "lucide-react";
 
 interface TicketData {
   id: string;
@@ -46,10 +47,52 @@ interface RaffleClientProps {
 
 type ViewState = "grid" | "form" | "payment";
 
+function MpStatusBanner() {
+  const searchParams = useSearchParams();
+  const mpStatus = searchParams.get("mp");
+
+  if (!mpStatus) return null;
+
+  const banners: Record<string, { icon: React.ReactNode; text: string; variant: "success" | "error" | "warning" }> = {
+    success: {
+      icon: <CheckCircle className="h-5 w-5" />,
+      text: "¡Pago confirmado! Tus números ya están reservados.",
+      variant: "success",
+    },
+    failure: {
+      icon: <XCircle className="h-5 w-5" />,
+      text: "El pago no se completó. Podés intentar de nuevo o usar transferencia bancaria.",
+      variant: "error",
+    },
+    pending: {
+      icon: <Clock className="h-5 w-5" />,
+      text: "El pago está pendiente. Te avisaremos cuando se confirme.",
+      variant: "warning",
+    },
+  };
+
+  const banner = banners[mpStatus];
+  if (!banner) return null;
+
+  const styles: Record<string, string> = {
+    success: "bg-green-50 dark:bg-green-950 border-green-200 text-green-700 dark:text-green-300",
+    error: "bg-red-50 dark:bg-red-950 border-red-200 text-red-700 dark:text-red-300",
+    warning: "bg-amber-50 dark:bg-amber-950 border-amber-200 text-amber-700 dark:text-amber-300",
+  };
+
+  return (
+    <div className={`rounded-lg border p-4 flex items-center gap-3 ${styles[banner.variant]}`}>
+      {banner.icon}
+      <p className="text-sm font-medium">{banner.text}</p>
+    </div>
+  );
+}
+
 export function RaffleClient({ raffle, settings }: RaffleClientProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [view, setView] = useState<ViewState>("grid");
-  const [paymentData, setPaymentData] = useState<{
+  const [reservationData, setReservationData] = useState<{
+    ticketIds: string[];
     numbers: number[];
     totalAmount: number;
     buyerName: string;
@@ -58,9 +101,9 @@ export function RaffleClient({ raffle, settings }: RaffleClientProps) {
 
   const selectedTickets = useMemo(
     () =>
-    (raffle.tickets as TicketData[]).filter(
-      (t) => selectedIds.includes(t.id) && t.status === "available",
-    ),
+      (raffle.tickets as TicketData[]).filter(
+        (t) => selectedIds.includes(t.id) && t.status === "available",
+      ),
     [raffle.tickets, selectedIds],
   );
 
@@ -75,18 +118,19 @@ export function RaffleClient({ raffle, settings }: RaffleClientProps) {
   }
 
   function handleReserveSuccess(data: {
+    ticketIds: string[];
     numbers: number[];
     totalAmount: number;
     buyerName: string;
     buyerPhone: string;
   }) {
-    setPaymentData(data);
+    setReservationData(data);
     setView("payment");
   }
 
   function handleBackToGrid() {
     setSelectedIds([]);
-    setPaymentData(null);
+    setReservationData(null);
     setView("grid");
   }
 
@@ -108,19 +152,26 @@ export function RaffleClient({ raffle, settings }: RaffleClientProps) {
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-4xl">
-        {view === "payment" && paymentData ? (
-          <PaymentInfo
-            numbers={paymentData.numbers}
-            totalAmount={paymentData.totalAmount}
-            raffleTitle={raffle.title}
-            buyerName={paymentData.buyerName}
-            buyerPhone={paymentData.buyerPhone}
-            alias={settings.mp_alias}
-            cbu={settings.mp_cbu}
-            titular={settings.mp_titular}
-            adminWhatsapp={settings.admin_whatsapp}
-            onBack={handleBackToGrid}
-          />
+        {/* MP return banners */}
+        <MpStatusBanner />
+
+        {view === "payment" && reservationData ? (
+          <div className="mt-4">
+            <PaymentInfo
+              raffleId={raffle.id}
+              raffleTitle={raffle.title}
+              ticketIds={reservationData.ticketIds}
+              numbers={reservationData.numbers}
+              totalAmount={reservationData.totalAmount}
+              buyerName={reservationData.buyerName}
+              buyerPhone={reservationData.buyerPhone}
+              alias={settings.mp_alias}
+              cbu={settings.mp_cbu}
+              titular={settings.mp_titular}
+              adminWhatsapp={settings.admin_whatsapp}
+              onBack={handleBackToGrid}
+            />
+          </div>
         ) : (
           <div className="space-y-8">
             {/* Raffle Info */}

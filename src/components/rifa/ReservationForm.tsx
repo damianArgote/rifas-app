@@ -17,6 +17,7 @@ interface ReservationFormProps {
   raffleTitle: string;
   selectedTickets: TicketData[];
   onSuccess: (data: {
+    ticketIds: string[];
     numbers: number[];
     totalAmount: number;
     buyerName: string;
@@ -69,6 +70,7 @@ export function ReservationForm({
       }
 
       onSuccess({
+        ticketIds: result.data!.ticketIds,
         numbers: result.data!.numbers,
         totalAmount: result.data!.totalAmount,
         buyerName: result.data!.buyerName,

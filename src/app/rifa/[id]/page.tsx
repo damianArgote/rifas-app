@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getPublicRaffle } from "@/lib/actions/raffles";
 import { getSettings } from "@/lib/actions/settings";
@@ -28,9 +29,8 @@ export default async function PublicRafflePage({
   };
 
   return (
-    <RaffleClient
-      raffle={raffle}
-      settings={settings}
-    />
+    <Suspense fallback={<div className="p-8 text-center">Cargando...</div>}>
+      <RaffleClient raffle={raffle} settings={settings} />
+    </Suspense>
   );
 }
