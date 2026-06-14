@@ -1,36 +1,142 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rifas App — Plataforma de rifas online
 
-## Getting Started
+Panel admin + vista pública con selección de números y datos de pago (Mercado Pago / transferencia).
 
-First, run the development server:
+## Stack
+
+| Capa        | Tecnología                              |
+| ----------- | --------------------------------------- |
+| Framework   | Next.js 16 + Turbopack                  |
+| UI          | Tailwind CSS 4 + Shadcn/ui              |
+| DB          | Neon (PostgreSQL serverless)            |
+| ORM         | Drizzle ORM                             |
+| Auth        | JWT custom (jose)                       |
+| Deploy      | Vercel (recomendado)                    |
+
+## Requisitos
+
+- Node.js 20+
+- Una cuenta gratuita en [Neon](https://neon.tech)
+
+## Setup local
+
+```bash
+# 1. Clonar
+git clone git@github.com:damianArgote/rifas-app.git
+cd rifas-app
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Crear .env (copiar y completar)
+cp .env.example .env
+```
+
+### 4. Base de datos (Neon)
+
+1. Creá un proyecto en [Neon Console](https://console.neon.tech)
+2. En la pestaña **Dashboard** copiá la **Connection string** (Pooled o Direct, ambas funcionan)
+3. Pegala en `.env` como `DATABASE_URL`
+
+La connection string tiene esta pinta:
+
+```
+DATABASE_URL="postgresql://usuario:password@ep-algo-123456.us-east-2.aws.neon.tech/neondb?sslmode=require"
+```
+
+**Importante**: agregá `?sslmode=require` al final si no viene.
+
+```bash
+# 4. Aplicar schema a la DB
+npx drizzle-kit push
+
+# 5. (Opcional) Ver el schema generado
+npx drizzle-kit studio
+```
+
+### 5. Variables de entorno restantes
+
+```bash
+# Generar una secret key para JWT
+openssl rand -base64 32
+# -> Copiar el resultado a AUTH_SECRET en .env
+```
+
+| Variable          | Descripción                                   |
+| ----------------- | --------------------------------------------- |
+| `DATABASE_URL`    | Connection string de Neon                     |
+| `AUTH_SECRET`     | Clave para firmar JWT (generar con openssl)   |
+| `ADMIN_EMAIL`     | Email del admin para login                    |
+| `ADMIN_PASSWORD`  | Password del admin para login                 |
+| `MP_ALIAS`        | Alias de Mercado Pago (se puede editar luego) |
+| `MP_CBU`          | CBU/CVU para transferencia                    |
+| `MP_TITULAR`      | Nombre del titular de la cuenta               |
+| `ADMIN_WHATSAPP`  | WhatsApp del admin (con código país)          |
+
+### 6. Sembrar admin (primera vez)
+
+La DB arranca vacía. Hay dos opciones para crear el admin:
+
+**Opción A — Seed script** (recomendado):
+
+Creá `src/lib/db/seed.ts`:
+
+```ts
+import "dotenv/config";
+import { db } from "./index";
+import { settings } from "./schema";
+
+const defaults = [
+  { key: "admin_email", value: process.env.ADMIN_EMAIL || "admin@rifas.app" },
+  { key: "admin_password", value: process.env.ADMIN_PASSWORD || "change-me" },
+  { key: "mp_alias", value: process.env.MP_ALIAS || "" },
+  { key: "mp_cbu", value: process.env.MP_CBU || "" },
+  { key: "mp_titular", value: process.env.MP_TITULAR || "" },
+  { key: "admin_whatsapp", value: process.env.ADMIN_WHATSAPP || "" },
+];
+
+for (const s of defaults) {
+  await db.insert(settings).values(s).onConflictDoNothing();
+}
+
+console.log("✅ Settings seeded");
+process.exit(0);
+```
+
+Ejecutalo con:
+
+```bash
+npx tsx src/lib/db/seed.ts
+```
+
+**Opción B — Login → Configuración**: iniciá sesión en `/admin/login` con las credenciales de `.env`, luego andá a `/admin/configuracion` y completá los datos desde la UI.
+
+### 7. Iniciar dev
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Abrir http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Rutas principales
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Ruta                      | Descripción                   |
+| ------------------------- | ----------------------------- |
+| `/`                       | Home — últimas rifas activas  |
+| `/rifa/[id]`              | Vista pública de una rifa     |
+| `/admin/login`            | Login del panel admin         |
+| `/admin`                  | Dashboard — lista de rifas    |
+| `/admin/rifas/nueva`      | Crear una rifa                |
+| `/admin/rifas/[id]`       | Detalle + elegir ganador      |
+| `/admin/configuracion`    | Config (MP, WhatsApp, etc.)   |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts disponibles
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run dev       # Dev server con Turbopack
+npm run build     # Build production
+npm run start     # Servir build
+npm run lint      # ESLint
+npx drizzle-kit push   # Sincronizar schema a DB
+npx drizzle-kit studio # Drizzle Studio (UI para ver datos)
+```
