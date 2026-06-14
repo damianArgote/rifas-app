@@ -6,7 +6,7 @@ import { settings } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getSession } from "@/lib/auth";
 
-type SettingKey = "mp_alias" | "mp_cvu" | "mp_titular" | "admin_whatsapp";
+type SettingKey = "mp_alias" | "mp_cvu" | "mp_titular" | "admin_whatsapp" | "cash_address" | "cash_info";
 
 export async function getSettings() {
   const allSettings = await db.query.settings.findMany();
@@ -16,6 +16,8 @@ export async function getSettings() {
     mp_cvu: process.env.MP_CVU ?? "",
     mp_titular: process.env.MP_TITULAR ?? "",
     admin_whatsapp: process.env.ADMIN_WHATSAPP ?? "",
+    cash_address: process.env.CASH_ADDRESS ?? "",
+    cash_info: process.env.CASH_INFO ?? "",
   };
 
   const result = { ...defaults };
@@ -58,6 +60,8 @@ export async function updateSettings(formData: FormData) {
     "mp_cvu",
     "mp_titular",
     "admin_whatsapp",
+    "cash_address",
+    "cash_info",
   ];
 
   for (const key of keys) {

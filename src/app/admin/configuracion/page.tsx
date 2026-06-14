@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -25,6 +26,8 @@ export default function ConfigPage() {
     mp_cvu: "",
     mp_titular: "",
     admin_whatsapp: "",
+    cash_address: "",
+    cash_info: "",
   });
 
   useEffect(() => {
@@ -150,6 +153,42 @@ export default function ConfigPage() {
               <p className="text-xs text-muted-foreground">
                 Sin el símbolo +. Ej: 5491123456789
               </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Pago en efectivo</CardTitle>
+            <CardDescription>
+              Datos para coordinar el pago en efectivo
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="cash_address">Dirección de cobro</Label>
+              <Textarea
+                id="cash_address"
+                name="cash_address"
+                value={formData.cash_address}
+                onChange={(e) =>
+                  setFormData({ ...formData, cash_address: e.target.value })
+                }
+                placeholder="Dirección donde el comprador puede acercarse a pagar"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cash_info">Información adicional</Label>
+              <Textarea
+                id="cash_info"
+                name="cash_info"
+                value={formData.cash_info}
+                onChange={(e) =>
+                  setFormData({ ...formData, cash_info: e.target.value })
+                }
+                placeholder="Horarios, contacto, referencias, etc."
+              />
             </div>
           </CardContent>
         </Card>

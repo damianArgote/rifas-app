@@ -38,6 +38,8 @@ interface SettingsData {
   mp_cvu: string;
   mp_titular: string;
   admin_whatsapp: string;
+  cash_address?: string;
+  cash_info?: string;
 }
 
 interface RaffleClientProps {
@@ -169,6 +171,8 @@ export function RaffleClient({ raffle, settings }: RaffleClientProps) {
               cvu={settings.mp_cvu}
               titular={settings.mp_titular}
               adminWhatsapp={settings.admin_whatsapp}
+              cashAddress={settings.cash_address}
+              cashInfo={settings.cash_info}
               onBack={handleBackToGrid}
             />
           </div>
@@ -261,7 +265,7 @@ export function RaffleClient({ raffle, settings }: RaffleClientProps) {
 
             {/* Number Grid & Selection */}
             <section>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                 <h2 className="text-xl font-semibold">Elegí tus números</h2>
                 <div className="flex gap-3 text-xs">
                   <span className="flex items-center gap-1">

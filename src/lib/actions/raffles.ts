@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { raffles, tickets, type NewRaffle } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -155,6 +155,69 @@ export async function finishRaffle(id: string) {
 
   revalidatePath("/admin");
   revalidatePath(`/rifa/${id}`);
+}
+
+// ─── Cancel Raffle ──────────────────────────────────────────────────────────
+export async function cancelRaffle(id: string) {
+  const session = await getSession();
+  if (!session) return { error: "No autorizado" };
+
+  // Check if there are paid tickets
+  const paidTickets = await db.query.tickets.findMany({
+    where: and(
+      eq(tickets.raffleId, id),
+      eq(tickets.status, "paid"),
+    ),
+  });
+
+  if (paidTickets.length > 0) {
+    return { error: "No se puede cancelar: hay números pagados" };
+  }
+
+  // Release all reserved tickets
+  await db
+    .update(tickets)
+    .set({
+      status: "available",
+      buyerName: null,
+      buyerPhone: null,
+      reservedAt: null,
+      expiresAt: null,
+      paymentProofUrl: null,
+    })
+    .where(
+      and(
+        eq(tickets.raffleId, id),
+        eq(tickets.status, "reserved"),
+      ),
+    );
+
+  // Update raffle status
+  await db
+    .update(raffles)
+    .set({ status: "cancelled", updatedAt: new Date() })
+    .where(eq(raffles.id, id));
+
+  revalidatePath("/admin");
+  revalidatePath(`/rifa/${id}`);
+
+  return { success: true };
+}
+
+// ─── Reactivate Raffle ──────────────────────────────────────────────────────
+export async function reactivateRaffle(id: string) {
+  const session = await getSession();
+  if (!session) return { error: "No autorizado" };
+
+  await db
+    .update(raffles)
+    .set({ status: "active", updatedAt: new Date() })
+    .where(eq(raffles.id, id));
+
+  revalidatePath("/admin");
+  revalidatePath(`/rifa/${id}`);
+
+  return { success: true };
 }
 
 // ─── Delete Raffle ──────────────────────────────────────────────────────────

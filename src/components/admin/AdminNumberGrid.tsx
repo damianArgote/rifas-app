@@ -21,6 +21,13 @@ import { toast } from "sonner";
 import { updateTicketStatus } from "@/lib/actions/tickets";
 import { TICKET_STATUS } from "@/lib/constants";
 import { cn, formatNumber } from "@/lib/utils";
+import type { PaymentMethod } from "@/lib/db/schema";
+
+const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  mp: "Mercado Pago",
+  transfer: "Transferencia",
+  cash: "Efectivo",
+};
 
 interface AdminTicket {
   id: string;
@@ -43,10 +50,12 @@ export function AdminNumberGrid({
     null,
   );
   const [localTickets, setLocalTickets] = useState(tickets);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("mp");
 
   async function handleStatusChange(
     ticketId: string,
     newStatus: "available" | "reserved" | "paid",
+    pm?: PaymentMethod,
   ) {
     // Optimistic update
     setLocalTickets((prev) =>
@@ -56,7 +65,7 @@ export function AdminNumberGrid({
     );
 
     try {
-      await updateTicketStatus(ticketId, newStatus);
+      await updateTicketStatus(ticketId, newStatus, pm);
       toast.success("Estado actualizado");
     } catch {
       // Revert on error
@@ -101,8 +110,8 @@ export function AdminNumberGrid({
               onClick={() => setSelectedTicket(ticket)}
               className={cn(
                 "relative flex aspect-square items-center justify-center rounded-lg text-sm font-bold transition-all",
-                "hover:ring-2 hover:ring-primary hover:ring-offset-1",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "hover:ring-2 hover:ring-violet-400 hover:ring-offset-1",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400",
                 statusConfig.color,
                 statusConfig.textColor,
               )}
@@ -180,7 +189,11 @@ export function AdminNumberGrid({
                         }
                         size="sm"
                         onClick={() =>
-                          handleStatusChange(selectedTicket.id, status)
+                          handleStatusChange(
+                            selectedTicket.id,
+                            status,
+                            status === "paid" ? paymentMethod : undefined,
+                          )
                         }
                         disabled={selectedTicket.status === status}
                       >
@@ -190,6 +203,51 @@ export function AdminNumberGrid({
                   )}
                 </div>
               </div>
+
+              {/* Payment method selector (visible when changing to paid) */}
+              {selectedTicket.status !== "paid" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Método de pago:
+                  </label>
+                  <Select
+                    value={paymentMethod}
+                    onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(PAYMENT_METHOD_LABELS).map(
+                        ([key, label]) => (
+                          <SelectItem key={key} value={key}>
+                            {label}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Release ticket button */}
+              {selectedTicket.status !== "available" && (
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        "¿Liberar este ticket? Se eliminarán los datos del comprador.",
+                      )
+                    ) {
+                      handleStatusChange(selectedTicket.id, "available");
+                    }
+                  }}
+                >
+                  Liberar ticket
+                </Button>
+              )}
             </div>
           )}
         </DialogContent>

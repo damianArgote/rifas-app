@@ -20,6 +20,8 @@ interface PaymentInfoProps {
   cvu: string;
   titular: string;
   adminWhatsapp: string;
+  cashAddress?: string;
+  cashInfo?: string;
   onBack: () => void;
 }
 
@@ -35,13 +37,15 @@ export function PaymentInfo({
   cvu,
   titular,
   adminWhatsapp,
+  cashAddress,
+  cashInfo,
   onBack,
 }: PaymentInfoProps) {
   const [copiedAlias, setCopiedAlias] = useState(false);
   const [copiedCvu, setCopiedCvu] = useState(false);
   const [mpLoading, setMpLoading] = useState(false);
   const [mpError, setMpError] = useState("");
-  const [payMethod, setPayMethod] = useState<"mp" | "transfer" | null>(null);
+  const [payMethod, setPayMethod] = useState<"mp" | "transfer" | "cash" | null>(null);
 
   const numberList = numbers
     .sort((a, b) => a - b)
@@ -52,7 +56,12 @@ export function PaymentInfo({
     `¡Hola! Acabo de reservar los números ${numberList} para la rifa '${raffleTitle}'. El total es ${formatARS(totalAmount)}. Te adjunto el comprobante de la transferencia a nombre de ${buyerName}.`,
   );
 
+  const cashWaMessage = encodeURIComponent(
+    `¡Hola! Acabo de reservar los números ${numberList} para la rifa '${raffleTitle}'. El total es ${formatARS(totalAmount)}. Quiero pagar en efectivo.`,
+  );
+
   const waUrl = `https://wa.me/${adminWhatsapp}?text=${waMessage}`;
+  const cashWaUrl = `https://wa.me/${adminWhatsapp}?text=${cashWaMessage}`;
 
   async function handleMpPayment() {
     setMpLoading(true);
@@ -149,6 +158,14 @@ export function PaymentInfo({
             >
               <Copy className="h-5 w-5" />
               Transferencia bancaria
+            </Button>
+
+            <Button
+              variant="outline"
+              className="w-full gap-2 h-12 text-base"
+              onClick={() => setPayMethod("cash")}
+            >
+              Efectivo
             </Button>
           </div>
         )}
@@ -269,6 +286,50 @@ export function PaymentInfo({
               onClick={() => setPayMethod("mp")}
             >
               O pagar con Mercado Pago
+            </Button>
+          </div>
+        )}
+
+        {/* Cash payment */}
+        {payMethod === "cash" && (
+          <div className="space-y-3">
+            <h3 className="font-semibold text-center">Pago en efectivo</h3>
+            {cashAddress && (
+              <div className="rounded-lg border p-3">
+                <p className="text-xs text-muted-foreground">Dirección de cobro</p>
+                <p className="font-medium whitespace-pre-wrap">{cashAddress}</p>
+              </div>
+            )}
+            {cashInfo && (
+              <div className="rounded-lg border p-3">
+                <p className="text-xs text-muted-foreground">Información adicional</p>
+                <p className="font-medium whitespace-pre-wrap">{cashInfo}</p>
+              </div>
+            )}
+
+            <Separator />
+
+            <div className="space-y-3">
+              <a
+                href={cashWaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 h-9 px-2.5 text-sm font-medium whitespace-nowrap transition-all"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Avisar por WhatsApp que pagaré en efectivo
+              </a>
+              <p className="text-xs text-muted-foreground text-center">
+                Te abrimos WhatsApp con el mensaje listo para coordinar.
+              </p>
+            </div>
+
+            <Button
+              variant="ghost"
+              className="w-full"
+              onClick={() => setPayMethod("transfer")}
+            >
+              O usar transferencia bancaria
             </Button>
           </div>
         )}

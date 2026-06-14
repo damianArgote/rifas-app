@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { AdminNumberGrid } from "@/components/admin/AdminNumberGrid";
+import { AdminRaffleActions } from "@/components/admin/AdminRaffleActions";
 import {
   formatARS,
 } from "@/lib/utils";
@@ -51,10 +52,18 @@ export default async function RaffleDetailPage({
             </h1>
             <Badge
               variant={
-                raffle.status === "active" ? "default" : "secondary"
+                raffle.status === "active"
+                  ? "default"
+                  : raffle.status === "cancelled"
+                    ? "destructive"
+                    : "secondary"
               }
             >
-              {raffle.status === "active" ? "Activa" : "Finalizada"}
+              {raffle.status === "active"
+                ? "Activa"
+                : raffle.status === "cancelled"
+                  ? "Cancelada"
+                  : "Finalizada"}
             </Badge>
           </div>
           {raffle.description && (
@@ -157,6 +166,12 @@ export default async function RaffleDetailPage({
           </ul>
         </CardContent>
       </Card>
+
+      {/* Admin Actions */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Acciones</h2>
+        <AdminRaffleActions raffleId={raffle.id} status={raffle.status} />
+      </div>
 
       <Separator />
 

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { tickets, raffles } from "@/lib/db/schema";
+import { tickets, raffles, type PaymentMethod } from "@/lib/db/schema";
 import { eq, and, inArray, sql } from "drizzle-orm";
 import { getSession } from "@/lib/auth";
 
@@ -112,6 +112,7 @@ export async function releaseExpiredReservations() {
 export async function updateTicketStatus(
   ticketId: string,
   newStatus: "available" | "reserved" | "paid",
+  paymentMethod?: PaymentMethod,
 ) {
   const session = await getSession();
   if (!session) throw new Error("No autorizado");
@@ -120,6 +121,9 @@ export async function updateTicketStatus(
 
   if (newStatus === "paid") {
     updateData.purchasedAt = new Date();
+    if (paymentMethod) {
+      updateData.paymentMethod = paymentMethod;
+    }
   }
   if (newStatus === "available") {
     updateData.buyerName = null;
@@ -128,6 +132,7 @@ export async function updateTicketStatus(
     updateData.reservedAt = null;
     updateData.expiresAt = null;
     updateData.paymentProofUrl = null;
+    updateData.paymentMethod = null;
   }
 
   const [ticket] = await db
@@ -146,6 +151,7 @@ export async function updateTicketStatus(
 export async function batchUpdateTickets(
   ticketIds: string[],
   newStatus: "available" | "reserved" | "paid",
+  paymentMethod?: PaymentMethod,
 ) {
   const session = await getSession();
   if (!session) throw new Error("No autorizado");
@@ -154,6 +160,9 @@ export async function batchUpdateTickets(
 
   if (newStatus === "paid") {
     updateData.purchasedAt = new Date();
+    if (paymentMethod) {
+      updateData.paymentMethod = paymentMethod;
+    }
   }
   if (newStatus === "available") {
     updateData.buyerName = null;
@@ -162,6 +171,7 @@ export async function batchUpdateTickets(
     updateData.reservedAt = null;
     updateData.expiresAt = null;
     updateData.paymentProofUrl = null;
+    updateData.paymentMethod = null;
   }
 
   const result = await db

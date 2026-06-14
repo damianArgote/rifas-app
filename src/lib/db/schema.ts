@@ -43,6 +43,7 @@ export const tickets = pgTable(
     buyerName: varchar("buyer_name", { length: 255 }),
     buyerPhone: varchar("buyer_phone", { length: 50 }),
     paymentProofUrl: text("payment_proof_url"),
+    paymentMethod: varchar("payment_method", { length: 20 }),
     purchasedAt: timestamp("purchased_at"),
     reservedAt: timestamp("reserved_at"),
     expiresAt: timestamp("expires_at"),
@@ -73,3 +74,4 @@ export type Setting = typeof settings.$inferSelect;
 
 export type TicketStatus = "available" | "reserved" | "paid";
 export type RaffleStatus = "active" | "finished" | "cancelled";
+export type PaymentMethod = "mp" | "transfer" | "cash";

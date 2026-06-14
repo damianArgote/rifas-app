@@ -41,7 +41,7 @@ export function CountdownTimer({ targetDate }: CountdownTimerProps) {
           key={unit.label}
           className="flex flex-col items-center rounded-lg bg-primary px-3 py-2 text-primary-foreground min-w-[70px]"
         >
-          <span className="text-2xl font-bold tabular-nums">
+          <span className="text-2xl font-bold tabular-nums" suppressHydrationWarning>
             {String(unit.value).padStart(2, "0")}
           </span>
           <span className="text-xs opacity-80">{unit.label}</span>
