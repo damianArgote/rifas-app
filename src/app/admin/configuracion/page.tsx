@@ -22,7 +22,7 @@ export default function ConfigPage() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     mp_alias: "",
-    mp_cbu: "",
+    mp_cvu: "",
     mp_titular: "",
     admin_whatsapp: "",
   });
@@ -93,13 +93,13 @@ export default function ConfigPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="mp_cbu">CBU</Label>
+              <Label htmlFor="mp_cvu">CVU</Label>
               <Input
-                id="mp_cbu"
-                name="mp_cbu"
-                value={formData.mp_cbu}
+                id="mp_cvu"
+                name="mp_cvu"
+                value={formData.mp_cvu}
                 onChange={(e) =>
-                  setFormData({ ...formData, mp_cbu: e.target.value })
+                  setFormData({ ...formData, mp_cvu: e.target.value })
                 }
                 placeholder="0000003100000000000001"
               />

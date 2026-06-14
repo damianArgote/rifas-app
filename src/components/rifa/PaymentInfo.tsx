@@ -17,7 +17,7 @@ interface PaymentInfoProps {
   buyerName: string;
   buyerPhone: string;
   alias: string;
-  cbu: string;
+  cvu: string;
   titular: string;
   adminWhatsapp: string;
   onBack: () => void;
@@ -32,13 +32,13 @@ export function PaymentInfo({
   buyerName,
   buyerPhone,
   alias,
-  cbu,
+  cvu,
   titular,
   adminWhatsapp,
   onBack,
 }: PaymentInfoProps) {
   const [copiedAlias, setCopiedAlias] = useState(false);
-  const [copiedCbu, setCopiedCbu] = useState(false);
+  const [copiedCvu, setCopiedCvu] = useState(false);
   const [mpLoading, setMpLoading] = useState(false);
   const [mpError, setMpError] = useState("");
   const [payMethod, setPayMethod] = useState<"mp" | "transfer" | null>(null);
@@ -84,15 +84,15 @@ export function PaymentInfo({
     }
   }
 
-  async function copyToClipboard(text: string, type: "alias" | "cbu") {
+  async function copyToClipboard(text: string, type: "alias" | "cvu") {
     try {
       await navigator.clipboard.writeText(text);
       if (type === "alias") {
         setCopiedAlias(true);
         setTimeout(() => setCopiedAlias(false), 2000);
       } else {
-        setCopiedCbu(true);
-        setTimeout(() => setCopiedCbu(false), 2000);
+        setCopiedCvu(true);
+        setTimeout(() => setCopiedCvu(false), 2000);
       }
     } catch {
       // fallback
@@ -220,17 +220,17 @@ export function PaymentInfo({
 
               <div className="flex items-center justify-between rounded-lg border p-3">
                 <div>
-                  <p className="text-xs text-muted-foreground">CBU</p>
+                  <p className="text-xs text-muted-foreground">CVU</p>
                   <p className="font-mono text-sm font-medium break-all">
-                    {cbu}
+                    {cvu}
                   </p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => copyToClipboard(cbu, "cbu")}
+                  onClick={() => copyToClipboard(cvu, "cvu")}
                 >
-                  {copiedCbu ? (
+                  {copiedCvu ? (
                     <Check className="h-4 w-4 text-green-600" />
                   ) : (
                     <Copy className="h-4 w-4" />

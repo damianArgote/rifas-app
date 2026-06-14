@@ -35,7 +35,7 @@ interface RaffleData {
 
 interface SettingsData {
   mp_alias: string;
-  mp_cbu: string;
+  mp_cvu: string;
   mp_titular: string;
   admin_whatsapp: string;
 }
@@ -166,7 +166,7 @@ export function RaffleClient({ raffle, settings }: RaffleClientProps) {
               buyerName={reservationData.buyerName}
               buyerPhone={reservationData.buyerPhone}
               alias={settings.mp_alias}
-              cbu={settings.mp_cbu}
+              cvu={settings.mp_cvu}
               titular={settings.mp_titular}
               adminWhatsapp={settings.admin_whatsapp}
               onBack={handleBackToGrid}
