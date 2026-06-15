@@ -6,24 +6,26 @@ import { settings } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getSession } from "@/lib/auth";
 
-type SettingKey = "mp_alias" | "mp_cvu" | "mp_titular" | "admin_whatsapp" | "cash_address" | "cash_info";
+export type SettingKey = "mp_alias" | "mp_cvu" | "mp_titular" | "admin_whatsapp" | "cash_address" | "cash_info";
 
-export async function getSettings() {
+const SETTING_KEYS: SettingKey[] = [
+  "mp_alias",
+  "mp_cvu",
+  "mp_titular",
+  "admin_whatsapp",
+  "cash_address",
+  "cash_info",
+];
+
+export async function getSettings(): Promise<Record<SettingKey, string>> {
   const allSettings = await db.query.settings.findMany();
 
-  const defaults: Record<SettingKey, string> = {
-    mp_alias: process.env.MP_ALIAS ?? "",
-    mp_cvu: process.env.MP_CVU ?? "",
-    mp_titular: process.env.MP_TITULAR ?? "",
-    admin_whatsapp: process.env.ADMIN_WHATSAPP ?? "",
-    cash_address: process.env.CASH_ADDRESS ?? "",
-    cash_info: process.env.CASH_INFO ?? "",
-  };
-
-  const result = { ...defaults };
+  const result = Object.fromEntries(
+    SETTING_KEYS.map((key) => [key, ""]),
+  ) as Record<SettingKey, string>;
 
   for (const s of allSettings) {
-    if (s.key in defaults) {
+    if (s.key in result) {
       result[s.key as SettingKey] = s.value;
     }
   }
@@ -55,16 +57,7 @@ export async function updateSettings(formData: FormData) {
   const session = await getSession();
   if (!session) throw new Error("No autorizado");
 
-  const keys: SettingKey[] = [
-    "mp_alias",
-    "mp_cvu",
-    "mp_titular",
-    "admin_whatsapp",
-    "cash_address",
-    "cash_info",
-  ];
-
-  for (const key of keys) {
+  for (const key of SETTING_KEYS) {
     const value = formData.get(key) as string;
     if (value) {
       const existing = await db.query.settings.findFirst({

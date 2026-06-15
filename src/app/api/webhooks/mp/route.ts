@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { paymentClient, isMpConfigured } from "@/lib/mp";
+import { getPaymentClient, isMpConfigured } from "@/lib/mp";
 import { db } from "@/lib/db";
 import { tickets } from "@/lib/db/schema";
 import { eq, inArray } from "drizzle-orm";
@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 // Mercado Pago webhook: receives payment notifications
 export async function POST(request: NextRequest) {
   try {
-    if (!isMpConfigured() || !paymentClient) {
+    if (!isMpConfigured()) {
       return NextResponse.json(
         { error: "MP not configured" },
         { status: 500 },
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch payment details from MP API
-    const payment = await paymentClient.get({ id: String(paymentId) });
+    const payment = await getPaymentClient().get({ id: String(paymentId) });
 
     if (!payment) {
       return NextResponse.json({ error: "Payment not found" }, { status: 404 });

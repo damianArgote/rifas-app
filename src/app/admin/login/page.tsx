@@ -57,22 +57,14 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="admin@rifas.app"
-                required
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
+                placeholder="••••••••"
                 required
+                autoFocus
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>

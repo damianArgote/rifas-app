@@ -1,43 +1,21 @@
-import { NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { NextResponse, type NextRequest } from "next/server";
 
-const SECRET = new TextEncoder().encode(
-  process.env.AUTH_SECRET ?? "fallback-secret-key-change-in-production",
-);
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-const COOKIE_NAME = "session";
-
-export async function proxy(request: Request) {
-  const { pathname } = new URL(request.url);
-  const isAdminRoute = pathname.startsWith("/admin");
-  const isLoginPage = pathname === "/admin/login";
-
-  if (isLoginPage) {
+  // Only protect /admin routes, EXCEPT /admin/login
+  if (!pathname.startsWith("/admin") || pathname === "/admin/login") {
     return NextResponse.next();
   }
 
-  if (isAdminRoute) {
-    const cookie = request.headers
-      .get("cookie")
-      ?.split(";")
-      .find((c) => c.trim().startsWith(`${COOKIE_NAME}=`));
-
-    if (!cookie) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
-    }
-
-    try {
-      const token = cookie.split("=")[1];
-      await jwtVerify(token, SECRET);
-      return NextResponse.next();
-    } catch {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
-    }
+  const token = request.cookies.get("session")?.value;
+  if (!token) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/login";
+    return NextResponse.redirect(url);
   }
-
-  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: "/admin/:path*",
 };

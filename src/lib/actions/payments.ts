@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { tickets } from "@/lib/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
-import { preferenceClient, getBaseUrl, isMpConfigured } from "@/lib/mp";
+import { getPreferenceClient, getBaseUrl, isMpConfigured } from "@/lib/mp";
 
 interface CreatePreferenceParams {
   raffleId: string;
@@ -16,7 +16,7 @@ interface CreatePreferenceParams {
 }
 
 export async function createPaymentPreference(params: CreatePreferenceParams) {
-  if (!isMpConfigured() || !preferenceClient) {
+  if (!isMpConfigured()) {
     return { error: "Mercado Pago no está configurado. Contactá al administrador." };
   }
 
@@ -59,7 +59,7 @@ export async function createPaymentPreference(params: CreatePreferenceParams) {
   const externalRef = `${raffleId}:${ticketIds.join(",")}`;
 
   try {
-    const preference = await preferenceClient.create({
+    const preference = await getPreferenceClient().create({
       body: {
         items: [
           {

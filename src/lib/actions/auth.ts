@@ -1,21 +1,20 @@
 "use server";
 
-import { createSession, destroySession, verifyCredentials } from "@/lib/auth";
+import { createSession, destroySession, verifyPassword } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 export async function login(formData: FormData) {
-  const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  if (!email || !password) {
-    return { error: "Completá todos los campos" };
+  if (!password) {
+    return { error: "Ingresá la contraseña" };
   }
 
-  if (!verifyCredentials(email, password)) {
-    return { error: "Email o contraseña incorrectos" };
+  if (!verifyPassword(password)) {
+    return { error: "Contraseña incorrecta" };
   }
 
-  await createSession("1", email, "Admin");
+  await createSession("1", "Admin");
   redirect("/admin");
 }
 

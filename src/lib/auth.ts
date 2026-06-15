@@ -9,15 +9,14 @@ const COOKIE_NAME = "session";
 
 interface SessionPayload {
   userId: string;
-  email: string;
   name: string;
 }
 
 // ─── Create Session ─────────────────────────────────────────────────────────
-export async function createSession(userId: string, email: string, name: string) {
+export async function createSession(userId: string, name: string) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-  const token = await new SignJWT({ userId, email, name })
+  const token = await new SignJWT({ userId, name })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(expiresAt)
@@ -59,13 +58,7 @@ export async function destroySession() {
   });
 }
 
-// ─── Verify Credentials ─────────────────────────────────────────────────────
-export function verifyCredentials(
-  email: string,
-  password: string,
-): boolean {
-  return (
-    email === process.env.ADMIN_EMAIL &&
-    password === process.env.ADMIN_PASSWORD
-  );
+// ─── Verify Password ────────────────────────────────────────────────────────
+export function verifyPassword(password: string): boolean {
+  return password === process.env.ADMIN_PASSWORD;
 }
