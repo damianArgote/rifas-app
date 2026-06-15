@@ -26,7 +26,19 @@ export default function LoginPage() {
         return;
       }
       // redirect happens server-side on success
-    } catch {
+    } catch (err) {
+      // Server actions call redirect(), which rejects the promise with a
+      // NEXT_REDIRECT error. This is expected — the framework handles
+      // navigation. Don't show toast for that.
+      if (
+        err &&
+        typeof err === "object" &&
+        "digest" in err &&
+        typeof err.digest === "string" &&
+        err.digest.startsWith("NEXT_REDIRECT")
+      ) {
+        return;
+      }
       toast.error("Error de conexión");
     } finally {
       setLoading(false);

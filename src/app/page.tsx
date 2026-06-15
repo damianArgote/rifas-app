@@ -24,7 +24,7 @@ export default async function HomePage() {
 
       <main className="container mx-auto px-4 py-12">
         <section className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             Encontrá tu número de la suerte
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">

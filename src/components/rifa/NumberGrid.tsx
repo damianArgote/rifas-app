@@ -43,7 +43,7 @@ export function NumberGrid({
               !isAvailable && !interactive && status.color,
               isAvailable && interactive && "bg-green-500 text-white hover:bg-green-600",
               isAvailable && !interactive && "bg-green-500 text-white",
-              isSelected && "ring-2 ring-blue-600 ring-offset-2 scale-110",
+              isSelected && "ring-2 ring-violet-400 ring-offset-2 ring-offset-background scale-110",
               !isAvailable && !isSelected && status.color,
               disabled && "opacity-70 cursor-not-allowed",
             )}
@@ -53,7 +53,7 @@ export function NumberGrid({
               {String(ticket.number).padStart(3, "0")}
             </span>
             {isSelected && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] text-white shadow">
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-violet-500 text-[10px] text-white shadow">
                 {selectedIds.indexOf(ticket.id) + 1}
               </span>
             )}
