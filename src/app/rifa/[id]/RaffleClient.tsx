@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatARS } from "@/lib/utils";
+import Image from "next/image";
 import { Trophy, Ticket, Calendar, Info, CheckCircle, XCircle, Clock } from "lucide-react";
 
 interface TicketData {
@@ -28,6 +29,9 @@ interface RaffleData {
   prize1: string;
   prize2: string | null;
   prize3: string | null;
+  prize1Image: string | null;
+  prize2Image: string | null;
+  prize3Image: string | null;
   drawDate: Date;
   status: string;
   tickets: TicketData[];
@@ -211,25 +215,27 @@ export function RaffleClient({ raffle, settings }: RaffleClientProps) {
                 Premios
               </h2>
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-lg border bg-card p-4 text-center">
-                  <Badge className="mb-2">1°</Badge>
-                  <p className="font-medium">{raffle.prize1}</p>
-                </div>
+                <PrizeCard
+                  label="1°"
+                  text={raffle.prize1}
+                  imageUrl={raffle.prize1Image}
+                  variant="default"
+                />
                 {raffle.prize2 && (
-                  <div className="rounded-lg border bg-card p-4 text-center">
-                    <Badge variant="secondary" className="mb-2">
-                      2°
-                    </Badge>
-                    <p className="font-medium">{raffle.prize2}</p>
-                  </div>
+                  <PrizeCard
+                    label="2°"
+                    text={raffle.prize2}
+                    imageUrl={raffle.prize2Image}
+                    variant="secondary"
+                  />
                 )}
                 {raffle.prize3 && (
-                  <div className="rounded-lg border bg-card p-4 text-center">
-                    <Badge variant="outline" className="mb-2">
-                      3°
-                    </Badge>
-                    <p className="font-medium">{raffle.prize3}</p>
-                  </div>
+                  <PrizeCard
+                    label="3°"
+                    text={raffle.prize3}
+                    imageUrl={raffle.prize3Image}
+                    variant="outline"
+                  />
                 )}
               </div>
             </section>
@@ -345,6 +351,38 @@ export function RaffleClient({ raffle, settings }: RaffleClientProps) {
           © {new Date().getFullYear()} Rifas App
         </div>
       </footer>
+    </div>
+  );
+}
+
+// ─── PrizeCard ──────────────────────────────────────────────────────────────
+function PrizeCard({
+  label,
+  text,
+  imageUrl,
+  variant,
+}: {
+  label: string;
+  text: string;
+  imageUrl: string | null | undefined;
+  variant: "default" | "secondary" | "outline";
+}) {
+  return (
+    <div className="rounded-lg border bg-card p-4 text-center space-y-3">
+      <Badge className="mb-0" variant={variant}>
+        {label}
+      </Badge>
+      {imageUrl && (
+        <div className="relative mx-auto w-full aspect-[4/3] max-h-40 rounded-md overflow-hidden">
+          <Image
+            src={imageUrl}
+            alt={text}
+            fill
+            className="object-cover"
+          />
+        </div>
+      )}
+      <p className="font-medium">{text}</p>
     </div>
   );
 }

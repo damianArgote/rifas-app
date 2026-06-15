@@ -20,6 +20,9 @@ export async function createRaffle(formData: FormData) {
   const prize2 = formData.get("prize2") as string | null;
   const prize3 = formData.get("prize3") as string | null;
   const drawDate = formData.get("drawDate") as string;
+  const prize1Image = formData.get("prize1Image") as string | null;
+  const prize2Image = formData.get("prize2Image") as string | null;
+  const prize3Image = formData.get("prize3Image") as string | null;
 
   if (!title || !numberCount || !pricePerNumber || !prize1 || !drawDate) {
     return { error: "Completá todos los campos obligatorios" };
@@ -33,6 +36,9 @@ export async function createRaffle(formData: FormData) {
     prize1,
     prize2: prize2 || null,
     prize3: prize3 || null,
+    prize1Image: prize1Image || null,
+    prize2Image: prize2Image || null,
+    prize3Image: prize3Image || null,
     drawDate: new Date(drawDate),
     status: "active",
   };

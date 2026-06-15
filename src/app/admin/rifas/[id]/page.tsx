@@ -14,6 +14,7 @@ import { AdminRaffleActions } from "@/components/admin/AdminRaffleActions";
 import {
   formatARS,
 } from "@/lib/utils";
+import Image from "next/image";
 import { ArrowLeft, Trophy } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -146,24 +147,30 @@ export default async function RaffleDetailPage({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className="space-y-2">
-            <li className="flex items-center gap-2">
-              <Badge variant="default">1°</Badge>
-              <span>{raffle.prize1}</span>
-            </li>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <PrizeCard
+              label="1°"
+              text={raffle.prize1}
+              imageUrl={raffle.prize1Image}
+              variant="default"
+            />
             {raffle.prize2 && (
-              <li className="flex items-center gap-2">
-                <Badge variant="secondary">2°</Badge>
-                <span>{raffle.prize2}</span>
-              </li>
+              <PrizeCard
+                label="2°"
+                text={raffle.prize2}
+                imageUrl={raffle.prize2Image}
+                variant="secondary"
+              />
             )}
             {raffle.prize3 && (
-              <li className="flex items-center gap-2">
-                <Badge variant="outline">3°</Badge>
-                <span>{raffle.prize3}</span>
-              </li>
+              <PrizeCard
+                label="3°"
+                text={raffle.prize3}
+                imageUrl={raffle.prize3Image}
+                variant="outline"
+              />
             )}
-          </ul>
+          </div>
         </CardContent>
       </Card>
 
@@ -222,6 +229,36 @@ export default async function RaffleDetailPage({
           Abrir vista pública
         </LinkButton>
       </div>
+    </div>
+  );
+}
+
+// ─── PrizeCard ──────────────────────────────────────────────────────────────
+function PrizeCard({
+  label,
+  text,
+  imageUrl,
+  variant,
+}: {
+  label: string;
+  text: string;
+  imageUrl: string | null;
+  variant: "default" | "secondary" | "outline";
+}) {
+  return (
+    <div className="rounded-lg border bg-card p-4 text-center space-y-3">
+      <Badge variant={variant}>{label}</Badge>
+      {imageUrl && (
+        <div className="relative mx-auto w-full aspect-[4/3] max-h-40 rounded-md overflow-hidden">
+          <Image
+            src={imageUrl}
+            alt={text}
+            fill
+            className="object-cover"
+          />
+        </div>
+      )}
+      <p className="font-medium">{text}</p>
     </div>
   );
 }
