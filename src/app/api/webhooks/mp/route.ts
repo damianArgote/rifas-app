@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  WebhookSignatureValidator,
+  InvalidWebhookSignatureError,
+} from "mercadopago";
 import { getPaymentClient, isMpConfigured } from "@/lib/mp";
 import { db } from "@/lib/db";
 import { tickets } from "@/lib/db/schema";
-import { eq, inArray } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+
+const WEBHOOK_SECRET = process.env.MP_WEBHOOK_SECRET;
 
 // Mercado Pago webhook: receives payment notifications
 export async function POST(request: NextRequest) {
@@ -13,6 +19,31 @@ export async function POST(request: NextRequest) {
         { error: "MP not configured" },
         { status: 500 },
       );
+    }
+
+    // Verify webhook signature when secret is configured
+    if (WEBHOOK_SECRET) {
+      try {
+        WebhookSignatureValidator.validate({
+          xSignature: request.headers.get("x-signature"),
+          xRequestId: request.headers.get("x-request-id"),
+          dataId: request.nextUrl.searchParams.get("data.id"),
+          secret: WEBHOOK_SECRET,
+          toleranceSeconds: 300, // 5 min tolerance
+        });
+      } catch (err) {
+        if (err instanceof InvalidWebhookSignatureError) {
+          console.error("MP webhook signature invalid:", err.reason, {
+            requestId: err.requestId,
+            timestamp: err.timestamp,
+          });
+          return NextResponse.json(
+            { error: "Invalid signature" },
+            { status: 401 },
+          );
+        }
+        throw err;
+      }
     }
 
     const body = await request.json();
